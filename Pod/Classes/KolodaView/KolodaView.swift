@@ -304,8 +304,8 @@ open class KolodaView: UIView, DraggableCardDelegate {
         return delegate?.koloda(self, allowedDirectionsForIndex: index) ?? [.left, .right]
     }
     
-    func card(_ card: DraggableCardView, wasSwipedIn direction: SwipeResultDirection) {
-        swipedAction(direction)
+    func card(_ card: DraggableCardView, wasSwipedIn direction: SwipeResultDirection, forced: Bool) {
+        swipedAction(direction, manually: forced)
     }
     
     func card(cardWasReset card: DraggableCardView) {
@@ -374,7 +374,7 @@ open class KolodaView: UIView, DraggableCardDelegate {
     }
     
     // MARK: Actions
-    private func swipedAction(_ direction: SwipeResultDirection) {
+    private func swipedAction(_ direction: SwipeResultDirection, manually: Bool = false) {
         animationSemaphore.increment()
         visibleCards.removeFirst()
         
@@ -398,12 +398,13 @@ open class KolodaView: UIView, DraggableCardDelegate {
                 
                 _self.visibleCards.last?.isHidden = false
                 _self.animationSemaphore.decrement()
-                _self.delegate?.koloda(_self, didSwipeCardAt: swipedCardIndex, in: direction)
+                
+                if !manually { _self.delegate?.koloda(_self, didSwipeCardAt: swipedCardIndex, in: direction) }
                 _self.delegate?.koloda(_self, didShowCardAt: _self.currentCardIndex)
             }
         } else {
             animationSemaphore.decrement()
-            delegate?.koloda(self, didSwipeCardAt: swipedCardIndex, in: direction)
+            if !manually { delegate?.koloda(self, didSwipeCardAt: swipedCardIndex, in: direction) }
             delegate?.kolodaDidRunOutOfCards(self)
         }
     }
@@ -593,7 +594,7 @@ open class KolodaView: UIView, DraggableCardDelegate {
                 
                 animationSemaphore.increment()
                 
-                frontCard.swipe(direction) {
+                frontCard.swipe(direction, forced: force) {
                     self.animationSemaphore.decrement()
                 }
                 frontCard.delegate = nil
