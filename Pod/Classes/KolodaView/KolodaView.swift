@@ -55,6 +55,7 @@ public protocol KolodaViewDelegate: class {
     func koloda(_ koloda: KolodaView, draggedCardWithPercentage finishPercentage: CGFloat, in direction: SwipeResultDirection)
     func kolodaDidResetCard(_ koloda: KolodaView)
     func kolodaSwipeThresholdRatioMargin(_ koloda: KolodaView) -> CGFloat?
+    func koloda(_ koloda: KolodaView, willShow card: UIView, at index: Int)
     func koloda(_ koloda: KolodaView, didShowCardAt index: Int)
     func koloda(_ koloda: KolodaView, shouldDragCardAt index: Int ) -> Bool
     func kolodaPanBegan(_ koloda: KolodaView, card: DraggableCardView)
@@ -432,6 +433,7 @@ open class KolodaView: UIView, DraggableCardDelegate {
         } else {
             addSubview(lastCard)
         }
+        delegate?.koloda(self, willShow: lastCard, at: indexToBeMake)
         visibleCards.append(lastCard)
     }
     
