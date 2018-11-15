@@ -587,20 +587,14 @@ open class KolodaView: UIView, DraggableCardDelegate {
     }
     
     public func swipe(_ direction: SwipeResultDirection, force: Bool = false) {
-        if !animationSemaphore.isAnimating {
-            if let frontCard = visibleCards.first {
-                if visibleCards.count > 1 {
-                    let nextCard = visibleCards[1]
-                    nextCard.alpha = shouldTransparentizeNextCard ? alphaValueSemiTransparent : alphaValueOpaque
-                }
-                
-                animationSemaphore.increment()
-                
-                frontCard.swipe(direction, forced: force) {
-                    self.animationSemaphore.decrement()
-                }
-                frontCard.delegate = nil
+        if let frontCard = visibleCards.first {
+            if visibleCards.count > 1 {
+                let nextCard = visibleCards[1]
+                nextCard.alpha = shouldTransparentizeNextCard ? alphaValueSemiTransparent : alphaValueOpaque
             }
+            
+            frontCard.swipe(direction, forced: force) {}
+            frontCard.delegate = nil
         }
     }
     
