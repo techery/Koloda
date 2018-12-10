@@ -165,6 +165,7 @@ open class KolodaView: UIView, DraggableCardDelegate {
                         nextCardView.alpha = alphaValueSemiTransparent
                     }
                     visibleCards.append(nextCardView)
+                    if isTop { delegate?.koloda(self, willShow: nextCardView, at: index) }
                     isTop ? addSubview(nextCardView) : insertSubview(nextCardView, belowSubview: visibleCards[index - 1])
                 }
                 self.delegate?.koloda(self, didShowCardAt: currentCardIndex)
