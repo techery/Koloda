@@ -296,12 +296,14 @@ public class DraggableCardView: UIView, UIGestureRecognizerDelegate {
     private var dragDirection: SwipeResultDirection? {
         //find closest direction
         let normalizedDragPoint = dragDistance.normalizedDistanceForSize(bounds.size)
-        return directions.reduce((distance:CGFloat.infinity, direction:nil)) { closest, direction in
-            let distance = direction.point.distanceTo(normalizedDragPoint)
-            if distance < closest.distance {
-                return (distance, direction)
-            }
-            return closest
+        return directions
+            .reduce((distance:CGFloat.infinity, direction:SwipeResultDirection?.none)) { closest, direction in
+                guard direction.hasPoint(normalizedDragPoint) else { return closest }
+                
+                let distance = direction.point.distanceTo(normalizedDragPoint)
+                if distance < closest.distance { return (distance, direction) }
+                
+                return closest
             }.direction
     }
     
