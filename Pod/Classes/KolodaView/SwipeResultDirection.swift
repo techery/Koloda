@@ -49,6 +49,24 @@ extension SwipeResultDirection {
         let h = VerticalPosition.bottom.rawValue - VerticalPosition.top.rawValue
         return CGRect(x: HorizontalPosition.left.rawValue, y: VerticalPosition.top.rawValue, width: w, height: h)
     }
+    
+    func hasPoint(_ point: CGPoint) -> Bool {
+        switch self {
+        case .up:
+            return point.y < 0 &&
+                (point.x > 0 && point.y < -point.x || point.x < 0 && point.y < point.x)
+        case .down:
+            return point.y > 0 &&
+                (point.x > 0 && point.y > point.x || point.x < 0 && point.y > -point.x)
+        case .left:
+            return point.x < 0 &&
+                (point.y > 0 && point.y < -point.x || point.y < 0 && point.y > point.x)
+        case .right:
+            return point.x > 0 &&
+                (point.y > 0 && point.y < point.x || point.y < 0 && point.y > -point.x)
+        default: return true
+        }
+    }
 }
 
 
