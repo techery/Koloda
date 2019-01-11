@@ -168,7 +168,6 @@ open class KolodaView: UIView, DraggableCardDelegate {
                     if isTop { delegate?.koloda(self, willShow: nextCardView, at: index) }
                     isTop ? addSubview(nextCardView) : insertSubview(nextCardView, belowSubview: visibleCards[index - 1])
                 }
-                self.delegate?.koloda(self, didShowCardAt: currentCardIndex)
             }
         }
     }
@@ -176,6 +175,9 @@ open class KolodaView: UIView, DraggableCardDelegate {
     public func layoutDeck() {
         for (index, card) in visibleCards.enumerated() {
             layoutCard(card, at: index)
+        }
+        if currentCardIndex == 0 {
+            delegate?.koloda(self, didShowCardAt: currentCardIndex)
         }
     }
     
