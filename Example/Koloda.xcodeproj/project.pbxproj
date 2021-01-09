@@ -62,11 +62,11 @@
 		607FACC71AFB9204008FA782 = {
 			isa = PBXGroup;
 			children = (
-				607FACF51AFB993E008FA782 /* Podspec Metadata */,
 				607FACD21AFB9204008FA782 /* Example */,
-				607FACD11AFB9204008FA782 /* Products */,
-				AB88095976C7B6CA809587FB /* Pods */,
 				85B3405D0F2A73D9A709B3FA /* Frameworks */,
+				AB88095976C7B6CA809587FB /* Pods */,
+				607FACF51AFB993E008FA782 /* Podspec Metadata */,
+				607FACD11AFB9204008FA782 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
@@ -82,18 +82,18 @@
 			isa = PBXGroup;
 			children = (
 				607FACD51AFB9204008FA782 /* AppDelegate.swift */,
-				607FACD71AFB9204008FA782 /* ViewController.swift */,
 				440FB7681B515995009FC9FC /* BackgroundAnimationViewController.swift */,
 				446BFD081CB0184A00619E78 /* BackgroundKolodaAnimator.swift */,
-				4420661E1B4457E800FD4CAD /* ExampleOverlayView.swift */,
 				440FB7661B51499A009FC9FC /* CustomKolodaView.swift */,
 				44B5EC281B660C8500895E3D /* CustomOverlayView.swift */,
-				607FACD91AFB9204008FA782 /* Main.storyboard */,
+				44B5EC2A1B660C9100895E3D /* CustomOverlayView.xib */,
+				4420661E1B4457E800FD4CAD /* ExampleOverlayView.swift */,
 				607FACDC1AFB9204008FA782 /* Images.xcassets */,
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
+				607FACD91AFB9204008FA782 /* Main.storyboard */,
 				4420661B1B44577500FD4CAD /* OverlayView.xib */,
-				44B5EC2A1B660C9100895E3D /* CustomOverlayView.xib */,
 				607FACD31AFB9204008FA782 /* Supporting Files */,
+				607FACD71AFB9204008FA782 /* ViewController.swift */,
 			);
 			name = Example;
 			path = Koloda;
@@ -111,8 +111,8 @@
 			isa = PBXGroup;
 			children = (
 				D6781607B5327BAF503C32E3 /* Koloda.podspec */,
-				8C6AF94B3192C604963C53B3 /* README.md */,
 				5C6DBB80685DABAE785B8715 /* LICENSE */,
+				8C6AF94B3192C604963C53B3 /* README.md */,
 			);
 			name = "Podspec Metadata";
 			sourceTree = "<group>";
@@ -170,13 +170,13 @@
 				TargetAttributes = {
 					607FACCF1AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
-						LastSwiftMigration = 0900;
+						LastSwiftMigration = 1020;
 					};
 				};
 			};
 			buildConfigurationList = 607FACCB1AFB9204008FA782 /* Build configuration list for PBXProject "Koloda" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
@@ -232,7 +232,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-Koloda_Example/Pods-Koloda_Example-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-Koloda_Example/Pods-Koloda_Example-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Koloda/Koloda.framework",
 				"${BUILT_PRODUCTS_DIR}/pop/pop.framework",
 			);
@@ -243,7 +243,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Koloda_Example/Pods-Koloda_Example-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Koloda_Example/Pods-Koloda_Example-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -408,8 +408,7 @@
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.yalantis.Koloda-Example";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -425,8 +424,7 @@
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.yalantis.Koloda-Example";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};

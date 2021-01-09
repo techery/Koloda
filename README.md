@@ -1,4 +1,4 @@
-KolodaView [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage) ![Swift 4.2](https://img.shields.io/badge/Swift-4.2-orange.svg)
+KolodaView ![cocoapods](https://img.shields.io/cocoapods/v/Koloda.svg)[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage) ![Swift 5.0](https://img.shields.io/badge/Swift-5.0-orange.svg)
 --------------
 
 [![Yalantis](https://raw.githubusercontent.com/Yalantis/PullToMakeSoup/master/PullToMakeSoupDemo/Resouces/badge_dark.png)](https://Yalantis.com/?utm_source=github)
@@ -23,13 +23,6 @@ ARC Compatibility
 ------------------
 
 KolodaView requires ARC.
-
-Сocoapods version
-------------------
-
-```ruby
-pod 'Koloda', '~> 4.5.1'
-```
 
 Thread Safety
 --------------
@@ -238,6 +231,11 @@ func koloda(_ koloda: KolodaView, didShowCardAt index: Int)
 ```
 This method is called after a card has been shown, after animation is complete
 ```swift
+func koloda(_ koloda: KolodaView, didRewindTo index: Int)
+```
+This method is called after a card was rewound, after animation is complete
+
+```swift
 func koloda(_ koloda: KolodaView, shouldDragCardAt index: Int) -> Bool
 ```
 This method is called when the card is beginning to be dragged. If you return YES from the method or
@@ -246,6 +244,21 @@ not move.
 
 Release Notes
 ----------------
+Version 5.0.1
+- added posibility to determine index of rewound card
+- fixed crash after drugging card
+
+Version 5.0
+- Swift 5.0 via [@maxxfrazer](https://github.com/maxxfrazer)
+
+Version 4.7
+- fixed a bug with card responding during swiping via [@lixiang1994](https://github.com/lixiang1994)
+- fixed a bug with inappropriate layouting via [@soundsmitten](https://github.com/soundsmitten)
+
+Version 4.6
+- update some properties to be publicitly settable via [@sroik](https://github.com/sroik) and [@leonardoherbert](https://github.com/leonardoherbert)
+- Xcode 9 back compatibility via [@seriyvolk83](https://github.com/seriyvolk83)
+- added posibility to have the card stack at the top or bottom via [@lorenzOliveto](https://github.com/lorenzOliveto)
 
 Version 4.5
 - Swift 4.2 via [@evilmint](https://github.com/evilmint)
@@ -309,7 +322,7 @@ License
 
 The MIT License (MIT)
 
-Copyright © 2018 Yalantis
+Copyright © 2019 Yalantis
 
 Permission is hereby granted free of charge to any person obtaining a copy of this software and associated documentation files (the "Software") to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

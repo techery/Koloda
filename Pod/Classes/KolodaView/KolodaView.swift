@@ -9,7 +9,7 @@
 import UIKit
 import pop
 
-//Default values
+// Default values
 private let defaultCountOfVisibleCards = 3
 private let defaultBackgroundCardsTopMargin: CGFloat = 4.0
 private let defaultBackgroundCardsScalePercent: CGFloat = 0.95
@@ -18,10 +18,15 @@ private let defaultBackgroundCardFrameAnimationDuration: TimeInterval = 0.2
 private let defaultAppearanceAnimationDuration: TimeInterval = 0.8
 private let defaultReverseAnimationDuration: TimeInterval = 0.3
 
-//Opacity values
+// Opacity values
 private let defaultAlphaValueOpaque: CGFloat = 1.0
 private let defaultAlphaValueTransparent: CGFloat = 0.0
 private let defaultAlphaValueSemiTransparent: CGFloat = 0.7
+
+// Direction of visible cards
+public enum VisibleCardsDirection: Int {
+    case top, bottom
+}
 
 public protocol KolodaViewDataSource: class {
     
@@ -57,6 +62,7 @@ public protocol KolodaViewDelegate: class {
     func kolodaSwipeThresholdRatioMargin(_ koloda: KolodaView) -> CGFloat?
     func koloda(_ koloda: KolodaView, willShow card: UIView, at index: Int)
     func koloda(_ koloda: KolodaView, didShowCardAt index: Int)
+    func koloda(_ koloda: KolodaView, didRewindTo index: Int)
     func koloda(_ koloda: KolodaView, shouldDragCardAt index: Int ) -> Bool
     func kolodaPanBegan(_ koloda: KolodaView, card: DraggableCardView)
     func kolodaPanFinished(_ koloda: KolodaView, card: DraggableCardView)
@@ -75,8 +81,9 @@ public extension KolodaViewDelegate {
     func kolodaShouldTransparentizeNextCard(_ koloda: KolodaView) -> Bool { return true }
     func koloda(_ koloda: KolodaView, draggedCardWithPercentage finishPercentage: CGFloat, in direction: SwipeResultDirection) {}
     func kolodaDidResetCard(_ koloda: KolodaView) {}
-    func kolodaSwipeThresholdRatioMargin(_ koloda: KolodaView) -> CGFloat? { return nil}
+    func kolodaSwipeThresholdRatioMargin(_ koloda: KolodaView) -> CGFloat? { return nil }
     func koloda(_ koloda: KolodaView, didShowCardAt index: Int) {}
+    func koloda(_ koloda: KolodaView, didRewindTo index: Int) {}
     func koloda(_ koloda: KolodaView, shouldDragCardAt index: Int ) -> Bool { return true }
     func kolodaPanBegan(_ koloda: KolodaView, card: DraggableCardView) {}
     func kolodaPanFinished(_ koloda: KolodaView, card: DraggableCardView) {}
@@ -84,7 +91,9 @@ public extension KolodaViewDelegate {
 
 open class KolodaView: UIView, DraggableCardDelegate {
     
-    //Opacity values
+    // MARK: Public
+    
+    // Opacity values
     public var alphaValueOpaque = defaultAlphaValueOpaque
     public var alphaValueTransparent = defaultAlphaValueTransparent
     public var alphaValueSemiTransparent = defaultAlphaValueSemiTransparent
@@ -99,6 +108,20 @@ open class KolodaView: UIView, DraggableCardDelegate {
     
     
     public var appearanceAnimationDuration = defaultAppearanceAnimationDuration
+    public var backgroundCardFrameAnimationDuration = defaultBackgroundCardFrameAnimationDuration
+    public var reverseAnimationDuration = defaultReverseAnimationDuration
+    
+    public var countOfVisibleCards = defaultCountOfVisibleCards
+    public var backgroundCardsTopMargin = defaultBackgroundCardsTopMargin
+    public var backgroundCardsScalePercent = defaultBackgroundCardsScalePercent
+
+    // Visible cards direction (defaults to bottom)
+    public var visibleCardsDirection: VisibleCardsDirection = .bottom
+    
+    public var isLoop = false
+    
+    private(set) public var currentCardIndex = 0
+    private(set) public var countOfCards = 0
     
     public weak var dataSource: KolodaViewDataSource? {
         didSet {
@@ -109,22 +132,23 @@ open class KolodaView: UIView, DraggableCardDelegate {
     public weak var delegate: KolodaViewDelegate?
     
     public var animator: KolodaViewAnimator {
-        set {
-            self._animator = newValue
-        }
-        get {
-            return self._animator
-        }
+        set { self._animator = newValue }
+        get { return self._animator }
     }
     
-    private lazy var _animator: KolodaViewAnimator = {
-        return KolodaViewAnimator(koloda: self)
-    }()
+    public var isAnimating: Bool {
+        return animationSemaphore.isAnimating
+    }
+    
+    public var isRunOutOfCards: Bool {
+        return visibleCards.isEmpty
+    }
+    
+    // MARK: Private
     
     internal var shouldTransparentizeNextCard: Bool {
         return delegate?.kolodaShouldTransparentizeNextCard(self) ?? true
     }
-    
     internal var animationSemaphore = KolodaAnimationSemaphore()
     
     public var isRunOutOfCards: Bool {
@@ -132,16 +156,22 @@ open class KolodaView: UIView, DraggableCardDelegate {
         return visibleCards.isEmpty
     }
     
-    private(set) public var currentCardIndex = 0
-    private(set) public var countOfCards = 0
-    public var countOfVisibleCards = defaultCountOfVisibleCards
+    private lazy var _animator: KolodaViewAnimator = {
+        return KolodaViewAnimator(koloda: self)
+    }()
     private var visibleCards = [DraggableCardView]()
-    public var isLoop = false
-    
+
+    private var cardIsDragging: Bool {
+        guard let frontCard = visibleCards.first else {
+            return false
+        }
+        return frontCard.dragBegin
+    }
+
     override open func layoutSubviews() {
         super.layoutSubviews()
         
-        if !animationSemaphore.isAnimating {
+        if !animationSemaphore.isAnimating, !cardIsDragging {
             layoutDeck()
         }
     }
@@ -201,12 +231,22 @@ open class KolodaView: UIView, DraggableCardDelegate {
         let width = self.frame.width * pow(scalePercent, CGFloat(index))
         let xOffset = (self.frame.width - width) / 2
         let height = (self.frame.height - bottomOffset - topOffset) * pow(scalePercent, CGFloat(index))
-        let multiplier: CGFloat = index > 0 ? 1.0 : 0.0
-        let prevCardFrame = index > 0 ? frameForCard(at: max(index - 1, 0)) : .zero
-        let yOffset = (prevCardFrame.height - height + prevCardFrame.origin.y + backgroundCardsTopMargin) * multiplier
-        let frame = CGRect(x: xOffset, y: yOffset, width: width, height: height)
-        
-        return frame
+
+        if visibleCardsDirection == .bottom {
+            let multiplier: CGFloat = index > 0 ? 1.0 : 0.0
+            let prevCardFrame = index > 0 ? frameForCard(at: max(index - 1, 0)) : .zero
+            let yOffset = (prevCardFrame.height - height + prevCardFrame.origin.y + backgroundCardsTopMargin) * multiplier
+            let frame = CGRect(x: xOffset, y: yOffset, width: width, height: height)
+            
+            return frame
+        } else {
+            let multiplier: CGFloat = index < (countOfVisibleCards - 1) ? 1.0 : 0.0
+            let nextCardFrame = index < (countOfVisibleCards - 1) ? frameForCard(at: min(index + 1, (countOfVisibleCards - 1))) : .zero
+            let yOffset = (nextCardFrame.origin.y + backgroundCardsTopMargin) * multiplier
+            let frame = CGRect(x: xOffset, y: yOffset, width: width, height: height)
+            
+            return frame
+        }
     }
     
     internal func frameForTopCard() -> CGRect {
@@ -304,7 +344,9 @@ open class KolodaView: UIView, DraggableCardDelegate {
     }
     
     func card(cardAllowedDirections card: DraggableCardView) -> [SwipeResultDirection] {
-        let index = currentCardIndex + visibleCards.index(of: card)!
+        guard let firstIndex = visibleCards.firstIndex(of: card) else { return [.left, .right] }
+        
+        let index = currentCardIndex + firstIndex
         return delegate?.koloda(self, allowedDirectionsForIndex: index) ?? [.left, .right]
     }
     
@@ -337,7 +379,7 @@ open class KolodaView: UIView, DraggableCardDelegate {
     }
     
     func card(cardWasTapped card: DraggableCardView) {
-        guard let visibleIndex = visibleCards.index(of: card) else { return }
+        guard let visibleIndex = visibleCards.firstIndex(of: card) else { return }
         
         let index = currentCardIndex + visibleIndex
         delegate?.koloda(self, didSelectCardAt: index)
@@ -348,7 +390,7 @@ open class KolodaView: UIView, DraggableCardDelegate {
     }
     
     func card(cardShouldDrag card: DraggableCardView) -> Bool {
-        guard let visibleIndex = visibleCards.index(of: card) else { return true}
+        guard let visibleIndex = visibleCards.firstIndex(of: card) else { return true}
         
         let index = currentCardIndex + visibleIndex
         return delegate?.koloda(self, shouldDragCardAt: index) ?? true
@@ -467,7 +509,7 @@ open class KolodaView: UIView, DraggableCardDelegate {
                 currentCard,
                 scale: cardParameters.scale,
                 frame: cardParameters.frame,
-                duration: defaultBackgroundCardFrameAnimationDuration,
+                duration: backgroundCardFrameAnimationDuration,
                 completion: animationCompletion
             )
         }
@@ -497,12 +539,13 @@ open class KolodaView: UIView, DraggableCardDelegate {
             visibleCards.insert(firstCardView, at: 0)
             
             animationSemaphore.increment()
-            animator.applyReverseAnimation(firstCardView, direction: direction, duration: defaultReverseAnimationDuration, completion: { [weak self] _ in
+            animator.applyReverseAnimation(firstCardView, direction: direction, duration: reverseAnimationDuration, completion: { [weak self] _ in
                 guard let _self = self else {
                     return
                 }
                 
                 _self.animationSemaphore.decrement()
+                _self.delegate?.koloda(_self, didRewindTo: _self.currentCardIndex)
                 _self.delegate?.koloda(_self, didShowCardAt: _self.currentCardIndex)
             })
         }
@@ -518,7 +561,7 @@ open class KolodaView: UIView, DraggableCardDelegate {
                 card,
                 scale: cardParameters.scale,
                 frame: cardParameters.frame,
-                duration: defaultBackgroundCardFrameAnimationDuration,
+                duration: backgroundCardFrameAnimationDuration,
                 completion: nil
             )
         }
@@ -546,7 +589,7 @@ open class KolodaView: UIView, DraggableCardDelegate {
         }
     }
     
-    private func reconfigureCards() {
+    public func reconfigureCards() {
         if dataSource != nil {
             for (index, card) in visibleCards.enumerated() {
                 var actualIndex = currentCardIndex + index
@@ -566,7 +609,9 @@ open class KolodaView: UIView, DraggableCardDelegate {
     
     public func reloadData() {
         guard let numberOfCards = dataSource?.kolodaNumberOfCards(self), numberOfCards > 0 else {
+            countOfCards = 0
             clear()
+            
             return
         }
         
@@ -590,10 +635,26 @@ open class KolodaView: UIView, DraggableCardDelegate {
     }
     
     public func swipe(_ direction: SwipeResultDirection, force: Bool = false) {
-        if let frontCard = visibleCards.first {
-            if visibleCards.count > 1 {
-                let nextCard = visibleCards[1]
-                nextCard.alpha = shouldTransparentizeNextCard ? alphaValueSemiTransparent : alphaValueOpaque
+        let shouldSwipe = delegate?.koloda(self, shouldSwipeCardAt: currentCardIndex, in: direction) ?? true
+        guard force || shouldSwipe else { return }
+        
+        let validDirection = delegate?.koloda(self, allowedDirectionsForIndex: currentCardIndex).contains(direction) ?? true
+        guard validDirection else { return }
+        
+        if !animationSemaphore.isAnimating {
+            if let frontCard = visibleCards.first, !frontCard.dragBegin {
+                
+                if visibleCards.count > 1 {
+                    let nextCard = visibleCards[1]
+                    nextCard.alpha = shouldTransparentizeNextCard ? alphaValueSemiTransparent : alphaValueOpaque
+                }
+                
+                animationSemaphore.increment()
+                
+                frontCard.swipe(direction) {
+                    self.animationSemaphore.decrement()
+                }
+                frontCard.delegate = nil
             }
             
             frontCard.swipe(direction, forced: force) {}
@@ -665,7 +726,7 @@ open class KolodaView: UIView, DraggableCardDelegate {
                 cards,
                 completion: { _ in
                     self.removeCards(cards)
-            }
+                }
             )
         } else {
             self.removeCards(cards)
@@ -691,7 +752,7 @@ open class KolodaView: UIView, DraggableCardDelegate {
                 insertedCards,
                 completion: { _ in
                     self.animationSemaphore.decrement()
-            }
+                }
             )
         }
         
