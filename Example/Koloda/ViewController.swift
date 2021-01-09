@@ -54,7 +54,10 @@ class ViewController: UIViewController {
 // MARK: KolodaViewDelegate
 
 extension ViewController: KolodaViewDelegate {
-    
+    func koloda(_ koloda: KolodaView, willShow card: UIView, at index: Int) {
+      
+    }
+  
     func kolodaDidRunOutOfCards(_ koloda: KolodaView) {
         let position = kolodaView.currentCardIndex
         for i in 1...4 {

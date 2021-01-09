@@ -112,7 +112,6 @@ open class KolodaView: UIView, DraggableCardDelegate {
     public var reverseAnimationDuration = defaultReverseAnimationDuration
     
     public var countOfVisibleCards = defaultCountOfVisibleCards
-    public var backgroundCardsTopMargin = defaultBackgroundCardsTopMargin
     public var backgroundCardsScalePercent = defaultBackgroundCardsScalePercent
 
     // Visible cards direction (defaults to bottom)
@@ -150,11 +149,6 @@ open class KolodaView: UIView, DraggableCardDelegate {
         return delegate?.kolodaShouldTransparentizeNextCard(self) ?? true
     }
     internal var animationSemaphore = KolodaAnimationSemaphore()
-    
-    public var isRunOutOfCards: Bool {
-        
-        return visibleCards.isEmpty
-    }
     
     private lazy var _animator: KolodaViewAnimator = {
         return KolodaViewAnimator(koloda: self)
@@ -651,14 +645,11 @@ open class KolodaView: UIView, DraggableCardDelegate {
                 
                 animationSemaphore.increment()
                 
-                frontCard.swipe(direction) {
+                frontCard.swipe(direction, forced: force) {
                     self.animationSemaphore.decrement()
                 }
                 frontCard.delegate = nil
             }
-            
-            frontCard.swipe(direction, forced: force) {}
-            frontCard.delegate = nil
         }
     }
     

@@ -49,7 +49,10 @@ class BackgroundAnimationViewController: UIViewController {
 
 //MARK: KolodaViewDelegate
 extension BackgroundAnimationViewController: KolodaViewDelegate {
-    
+    func koloda(_ koloda: KolodaView, willShow card: UIView, at index: Int) {
+      
+    }
+  
     func kolodaDidRunOutOfCards(_ koloda: KolodaView) {
         kolodaView.resetCurrentCardIndex()
     }
