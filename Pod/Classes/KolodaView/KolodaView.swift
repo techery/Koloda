@@ -635,7 +635,7 @@ open class KolodaView: UIView, DraggableCardDelegate {
         let validDirection = delegate?.koloda(self, allowedDirectionsForIndex: currentCardIndex).contains(direction) ?? true
         guard force || validDirection else { return }
         
-        if !animationSemaphore.isAnimating {
+        if !animationSemaphore.isAnimating || force {
             if let frontCard = visibleCards.first, !frontCard.dragBegin {
                 
                 if visibleCards.count > 1 {
